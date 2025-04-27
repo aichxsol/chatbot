@@ -1,0 +1,64 @@
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Serve static files
+app.use(express.static('public'));
+app.use(express.json());
+
+// Simple responses for the AICHX chatbot
+const knowledgeBase = {
+  "What is AICHX?": "AICHX is a next-gen token built on the Solana blockchain with a 2% tax on every transaction, used for buybacks to support long-term growth and price stability.",
+  "How does AICHX work?": "AICHX uses a smart ecosystem designed for sustainability, with a focus on value and community. The tokenomics involve a 2% tax for buybacks to support price stability.",
+  "Where can I buy AICHX?": "You can buy AICHX on Solana-compatible exchanges. For more info, visit our website at [https://aichx.org/](https://aichx.org/).",
+  "What is the roadmap for AICHX?": "The roadmap focuses on long-term growth with community engagement and ecosystem development. More details will be announced on our social media platforms.",
+  "Where can I join the community?": "Join our community on Telegram at [https://t.me/AICHXportal](https://t.me/AICHXportal) or follow us on Twitter at [@agent_aichx](https://twitter.com/agent_aichx)."
+};
+
+// Handle user query
+app.post('/ask', (req, res) => {
+  const userQuery = req.body.query;
+  const answer = knowledgeBase[userQuery] || "Sorry, I don't have an answer to that. Please visit [https://aichx.org/](https://aichx.org/) for more info.";
+
+  res.json({ answer });
+});
+
+// Serve the chatbot interface (HTML)
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AICHX Chatbot</title>
+    </head>
+    <body>
+        <h1>Ask the AICHX Chatbot</h1>
+        <input type="text" id="userQuery" placeholder="Ask me anything about AICHX" />
+        <button onclick="askQuestion()">Ask</button>
+        <p id="botResponse"></p>
+
+        <script>
+            async function askQuestion() {
+                const query = document.getElementById("userQuery").value;
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                document.getElementById("botResponse").innerText = data.answer;
+            }
+        </script>
+    </body>
+    </html>
+  `);
+});
+
+app.listen(port, () => {
+  console.log(`Chatbot listening at http://localhost:${port}`);
+});
